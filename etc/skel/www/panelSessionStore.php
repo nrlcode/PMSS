@@ -121,6 +121,17 @@ function pmssPanelSessionCsrfEnsure(array $paths, ?int $now = null): string
     return (string) $session['csrf'];
 }
 
+/** The same check the Lua gate applies: the cookie names the stored session and it has not expired. */
+function pmssPanelSessionCookieValid(array $session, string $cookie, int $now): bool
+{
+    $id = pmssPanelSessionHexOrEmpty($session['id'] ?? '');
+    $created = (int) ($session['created'] ?? 0);
+    $seen = (int) ($session['seen'] ?? 0);
+    return $id !== '' && hash_equals($id, $cookie)
+        && $created > 0 && $seen > 0 && $now >= $created && $now >= $seen
+        && $now - $created <= PMSS_PANEL_SESSION_ABSOLUTE_LIFETIME && $now - $seen <= PMSS_PANEL_SESSION_IDLE_TIMEOUT;
+}
+
 function pmssPanelSessionCsrfValid(array $session, string $token): bool { $csrf = pmssPanelSessionHexOrEmpty($session['csrf'] ?? ''); return $csrf !== '' && hash_equals($csrf, $token); }
 
 function pmssPanelSessionFailedIncrement(array $paths, ?int $now = null): int

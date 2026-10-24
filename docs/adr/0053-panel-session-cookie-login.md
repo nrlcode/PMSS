@@ -44,6 +44,9 @@ per-user htpasswd file with `crypt()` comparison. It writes one flat per-user
 session file under `~/.lighttpd/` with mode `0600`, regenerates the session id on
 successful login, requires a CSRF token for POST, and emits a host-scoped cookie
 with `Secure`, `HttpOnly`, and `SameSite=Lax`.
+The gate lets the logout page through without authentication, so logout acts
+only on a POST that carries the live session cookie and the session's CSRF
+token; a GET never logs out or stops the account's agent UIs.
 
 Password changes write bcrypt (`$2y$`) to the per-user htpasswd file so
 lighttpd, the PHP panel verifier, and rclone can all use the new entry. Existing
